@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import {Typography, Button, Form, message, Input, Icon} from 'antd';
-// import FileUpload from '../../utils/FileUpload'
+import FileUpload from '../../utils/FileUpload'
 import Axios from 'axios';
 
 const {Title} = Typography;
@@ -48,10 +48,8 @@ function UploadProductPage(props) {
   const onSubmit = (event) => {
     event.preventDefault();
 
-
-    if (!TitleValue || !DescriptionValue || !PriceValue ||
-      !ContinentValue || !Images) {
-      return alert('fill all the fields first!')
+    if (!TitleValue || !DescriptionValue || !PriceValue || !ContinentValue || !Images) {
+      return alert('모든 값을 넣어주세요.')
     }
 
     const variables = {
@@ -66,10 +64,10 @@ function UploadProductPage(props) {
     Axios.post('/api/product/uploadProduct', variables)
       .then(response => {
         if (response.data.success) {
-          alert('Product Successfully Uploaded')
+          alert('상품이 성공적으로 등록되었습니다.')
           props.history.push('/')
         } else {
-          alert('Failed to upload Product')
+          alert('상품 등록이 실패하였습니다.')
         }
       })
 
@@ -85,7 +83,7 @@ function UploadProductPage(props) {
       <Form onSubmit={onSubmit}>
 
         {/* DropZone */}
-        {/*<FileUpload refreshFunction={updateImages} />*/}
+        <FileUpload refreshFunction={updateImages} />
 
         <br/>
         <br/>
