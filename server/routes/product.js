@@ -85,9 +85,8 @@ router.post("/getProducts", (req, res) => {
   let sortBy = req.body.sortBy ? req.body.sortBy : "_id";
   let limit = req.body.limit ? parseInt(req.body.limit) : 100;
   let skip = parseInt(req.body.skip);
-
-  let findArgs = {};
   let term = req.body.searchTerm;
+  let findArgs = {};
 
   // key : continents 또는 price
   for (let key in req.body.filters) {

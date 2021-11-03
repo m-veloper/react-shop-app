@@ -6,7 +6,7 @@ import {Link} from "react-router-dom";
 import CheckBox from './Sections/CheckBox';
 import RadioBox from './Sections/RadioBox';
 import { continents, price } from './Sections/Datas';
-// import SearchFeature from './Sections/SearchFeature';
+import SearchFeature from './Sections/SearchFeature';
 
 const {Meta} = Card;
 
@@ -162,11 +162,7 @@ function LandingPage() {
 
       {/* Search  */}
       <div style={{display: 'flex', justifyContent: 'flex-end', margin: '1rem auto'}}>
-
-        {/*<SearchFeature*/}
-        {/*  refreshFunction={updateSearchTerms}*/}
-        {/*/>*/}
-
+        <SearchFeature refreshFunction={updateSearchTerms}/>
       </div>
 
 
