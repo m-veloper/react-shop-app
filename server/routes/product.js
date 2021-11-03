@@ -26,7 +26,7 @@ let storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   // mime type 체크하여 원하는 타입만 필터링
   const ext = file.mimetype;
-  if (ext === "image/png" || ext === "image/jpg"){
+  if (ext === "image/png" || ext === "image/jpg") {
     // 다른 파일도 허용하고 싶다면 if (ext !== "video/mp4" || ext !== "application/pdf" )
     // 이런식으로 file.mimetype 확인하여 추가.
     return cb(null, true);
@@ -70,7 +70,7 @@ router.post("/uploadProduct", auth, (req, res) => {
   product.save((err) => {
     if (err) {
       return res.status(400).json({success: false, err})
-    }else {
+    } else {
       return res.status(200).json({success: true})
     }
   })
@@ -145,8 +145,9 @@ router.get("/products_by_id", (req, res) => {
   let productIds = req.query.id
 
   console.log("req.query.id", req.query.id)
-
   if (type === "array") {
+    // id=12121212,121212,121212 이런 데이터를
+    // productIds = [12121212,121212,121212] 이런식으로 바꿔주기
     let ids = req.query.id.split(',');
     productIds = [];
     productIds = ids.map(item => {
@@ -163,8 +164,9 @@ router.get("/products_by_id", (req, res) => {
     .exec((err, product) => {
       if (err) {
         return res.status(400).send(err)
-      }else {
-        return res.status(200).send(product)
+      } else {
+        // return res.status(200).send(product)
+        return res.status(200).json({product})
       }
     })
 });

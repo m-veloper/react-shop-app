@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux';
-// import {
-//   getCartItems,
-//   removeCartItem,
-//   onSuccessBuy
-// } from '../../../_actions/user_actions';
-// import UserCardBlock from './Sections/UserCardBlock';
+import {
+  getCartItems,
+  removeCartItem,
+  onSuccessBuy
+} from '../../../_actions/user_actions';
+import UserCardBlock from './Sections/UserCardBlock';
 import { Result, Empty } from 'antd';
 import Axios from 'axios';
 // import Paypal from '../../utils/Paypal';
@@ -14,22 +14,24 @@ function CartPage(props) {
   const [Total, setTotal] = useState(0)
   const [ShowTotal, setShowTotal] = useState(false)
   const [ShowSuccess, setShowSuccess] = useState(false)
-
   useEffect(() => {
 
     let cartItems = [];
+    // 리덕스 User state 안에 cart 안에 상품이 있는지 확인
     if (props.user.userData && props.user.userData.cart) {
-      // if (props.user.userData.cart.length > 0) {
-      //   props.user.userData.cart.forEach(item => {
-      //     cartItems.push(item.id)
-      //   });
-      //   dispatch(getCartItems(cartItems, props.user.userData.cart))
-      //     .then((response) => {
-      //       if (response.payload.length > 0) {
-      //         calculateTotal(response.payload)
-      //       }
-      //     })
-      // }
+      // 카트 안에 상품이 1개 이상 있다면
+      if (props.user.userData.cart.length > 0) {
+        props.user.userData.cart.forEach(item => {
+          cartItems.push(item.id)
+        });
+        dispatch(getCartItems(cartItems, props.user.userData.cart))
+          .then((response) => {
+            if (response.payload.length > 0) {
+              console.log("성공");
+              calculateTotal(response.payload)
+            }
+          })
+      }
     }
   }, [props.user.userData])
 
@@ -39,7 +41,7 @@ function CartPage(props) {
     cartDetail.map(item => {
       total += parseInt(item.price, 10) * item.quantity
     });
-
+    console.log(total);
     setTotal(total)
     setShowTotal(true)
   }
@@ -47,27 +49,27 @@ function CartPage(props) {
 
   const removeFromCart = (productId) => {
 
-    // dispatch(removeCartItem(productId))
-    //   .then((response) => {
-    //     if (response.payload.cartDetail.length <= 0) {
-    //       setShowTotal(false)
-    //     } else {
-    //       calculateTotal(response.payload.cartDetail)
-    //     }
-    //   })
+    dispatch(removeCartItem(productId))
+      .then((response) => {
+        if (response.payload.cartDetail.length <= 0) {
+          setShowTotal(false)
+        } else {
+          calculateTotal(response.payload.cartDetail)
+        }
+      })
   }
 
   const transactionSuccess = (data) => {
-    // dispatch(onSuccessBuy({
-    //   cartDetail: props.user.cartDetail,
-    //   paymentData: data
-    // }))
-    //   .then(response => {
-    //     if (response.payload.success) {
-    //       setShowSuccess(true)
-    //       setShowTotal(false)
-    //     }
-    //   })
+    dispatch(onSuccessBuy({
+      cartDetail: props.user.cartDetail,
+      paymentData: data
+    }))
+      .then(response => {
+        if (response.payload.success) {
+          setShowSuccess(true)
+          setShowTotal(false)
+        }
+      })
   }
 
   const transactionError = () => {
@@ -83,13 +85,7 @@ function CartPage(props) {
     <div style={{ width: '85%', margin: '3rem auto' }}>
       <h1>My Cart</h1>
       <div>
-
-        {/*<UserCardBlock*/}
-        {/*  products={props.user.cartDetail}*/}
-        {/*  removeItem={removeFromCart}*/}
-        {/*/>*/}
-
-
+        <UserCardBlock products={props.user.cartDetail && props.user.cartDetail.product } removeItem={removeFromCart}/>
         {ShowTotal ?
           <div style={{ marginTop: '3rem' }}>
             <h2>Total amount: ${Total} </h2>

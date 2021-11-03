@@ -3,7 +3,7 @@ import {
     LOGIN_USER,
     REGISTER_USER,
     AUTH_USER,
-    LOGOUT_USER, ADD_TO_CART_USER,
+    LOGOUT_USER, ADD_TO_CART_USER, REMOVE_CART_ITEM_USER, ON_SUCCESS_BUY_USER, GET_CART_ITEMS_USER,
 } from './types';
 import { USER_SERVER } from '../components/Config.js';
 
@@ -56,4 +56,63 @@ export function addToCart(_id) {
         payload: request
     }
 }
+
+
+export function getCartItems(cartItems, userCart) {
+    const request = axios.get(`/api/product/products_by_id?id=${cartItems}&type=array`)
+      .then(response => {
+          // cartItems들에 해당하는 정보들을 Product Collection 에서 가져온 후에
+          // Quantity(수량) 정보를 넣어준다.
+          userCart.forEach(cartItem => {
+              response.data.product.forEach((productDetail, index) => {
+                  if (cartItem.id === productDetail._id) {
+                      response.data.product[index].quantity = cartItem.quantity;
+                  }
+              })
+          })
+          console.log(response.data)
+          return response.data;
+      });
+
+    return {
+        type: GET_CART_ITEMS_USER,
+        payload: request
+    }
+}
+
+
+
+
+export function removeCartItem(id) {
+    const request = axios.get(`/api/users/removeFromCart?_id=${id}`)
+      .then(response => {
+
+          response.data.cart.forEach(item => {
+              response.data.cartDetail.forEach((k, i) => {
+                  if (item.id === k._id) {
+                      response.data.cartDetail[i].quantity = item.quantity
+                  }
+              })
+          })
+          return response.data;
+      });
+
+    return {
+        type: REMOVE_CART_ITEM_USER,
+        payload: request
+    }
+}
+
+
+export function onSuccessBuy(data) {
+
+    const request = axios.post(`${USER_SERVER}/successBuy`, data)
+      .then(response => response.data);
+
+    return {
+        type: ON_SUCCESS_BUY_USER,
+        payload: request
+    }
+}
+
 
