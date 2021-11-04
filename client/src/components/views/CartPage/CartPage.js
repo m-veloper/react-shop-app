@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux';
+import React, {useEffect, useState} from 'react'
+import {useDispatch} from 'react-redux';
 import {
   getCartItems,
   removeCartItem,
   onSuccessBuy
 } from '../../../_actions/user_actions';
 import UserCardBlock from './Sections/UserCardBlock';
-import { Result, Empty } from 'antd';
-import Axios from 'axios';
-// import Paypal from '../../utils/Paypal';
+import {Result, Empty} from 'antd';
+import Paypal from '../../utils/Paypal';
+
 function CartPage(props) {
   const dispatch = useDispatch();
   const [Total, setTotal] = useState(0)
@@ -80,12 +80,12 @@ function CartPage(props) {
 
 
   return (
-    <div style={{ width: '85%', margin: '3rem auto' }}>
+    <div style={{width: '85%', margin: '3rem auto'}}>
       <h1>My Cart</h1>
       <div>
-        <UserCardBlock products={props.user.cartDetail && props.user.cartDetail } removeItem={removeFromCart}/>
+        <UserCardBlock products={props.user.cartDetail && props.user.cartDetail} removeItem={removeFromCart}/>
         {ShowTotal ?
-          <div style={{ marginTop: '3rem' }}>
+          <div style={{marginTop: '3rem'}}>
             <h2>Total amount: ${Total} </h2>
           </div>
           :
@@ -98,31 +98,22 @@ function CartPage(props) {
               width: '100%', display: 'flex', flexDirection: 'column',
               justifyContent: 'center'
             }}>
-              <br />
-              <Empty description={false} />
+              <br/>
+              <Empty description={false}/>
               <p>No Items In the Cart</p>
 
             </div>
         }
       </div>
-
-
-
-      {/* Paypal Button */}
-
-      {/*{ShowTotal &&*/}
-
-      {/*<Paypal*/}
-      {/*  toPay={Total}*/}
-      {/*  onSuccess={transactionSuccess}*/}
-      {/*  transactionError={transactionError}*/}
-      {/*  transactionCanceled={transactionCanceled}*/}
-      {/*/>*/}
-
-      {/*}*/}
-
-
-
+      {/*Paypal Button*/}
+      {ShowTotal &&
+      <Paypal
+        toPay={Total}
+        onSuccess={transactionSuccess}
+        transactionError={transactionError}
+        transactionCanceled={transactionCanceled}
+      />
+      }
     </div>
   )
 }
