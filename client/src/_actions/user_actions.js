@@ -47,6 +47,11 @@ export function logoutUser(){
     }
 }
 
+/**
+ * 장바구니 추가
+ * @param _id
+ * @returns {{payload: Promise<AxiosResponse<any>>, type: string}}
+ */
 export function addToCart(_id) {
     const request = axios.post(`${USER_SERVER}/addToCart?productId=${_id}`)
       .then(response => response.data);
@@ -57,16 +62,21 @@ export function addToCart(_id) {
     }
 }
 
-
+/**
+ * 장바구니 목록 가져오기
+ * @param cartItems
+ * @param userCart
+ * @returns {{payload: Promise<AxiosResponse<any>>, type: string}}
+ */
 export function getCartItems(cartItems, userCart) {
     const request = axios.get(`/api/product/products_by_id?id=${cartItems}&type=array`)
       .then(response => {
           // cartItems들에 해당하는 정보들을 Product Collection 에서 가져온 후에
           // Quantity(수량) 정보를 넣어준다.
           userCart.forEach(cartItem => {
-              response.data.product.forEach((productDetail, index) => {
+              response.data.forEach((productDetail, index) => {
                   if (cartItem.id === productDetail._id) {
-                      response.data.product[index].quantity = cartItem.quantity;
+                      response.data[index].quantity = cartItem.quantity;
                   }
               })
           })
@@ -80,13 +90,15 @@ export function getCartItems(cartItems, userCart) {
     }
 }
 
-
-
-
-export function removeCartItem(id) {
-    const request = axios.get(`/api/users/removeFromCart?_id=${id}`)
+/**
+ * 장바구니 삭제
+ * @param id
+ * @returns {{payload: Promise<AxiosResponse<any>>, type: string}}
+ */
+export function removeCartItem(productId) {
+    const request = axios.get(`/api/users/removeFromCart?_id=${productId}`)
       .then(response => {
-
+          // productInfo, cart 정보를 조합해서 cartDetail 을 새로 만든다
           response.data.cart.forEach(item => {
               response.data.cartDetail.forEach((k, i) => {
                   if (item.id === k._id) {

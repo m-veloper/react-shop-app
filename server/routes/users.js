@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {User} = require("../models/User");
-
+const {Product} = require("../models/Product");
 const {auth} = require("../middleware/auth");
 
 //=================================
@@ -129,22 +129,27 @@ router.post('/addToCart', auth, (req, res) => {
   })
 });
 
+/**
+ * 장바구니 삭제
+ */
 router.get('/removeFromCart', auth, (req, res) => {
 
+  // 먼저 cart 안에 내가 지우려고 한 상품을 지워주기
   User.findOneAndUpdate(
-    { _id: req.user._id },
+    {_id: req.user._id},
     {
       "$pull":
-        { "cart": { "id": req.query._id } }
+        {"cart": {"id": req.query._id}}
     },
-    { new: true },
+    {new: true},
     (err, userInfo) => {
       let cart = userInfo.cart;
       let array = cart.map(item => {
         return item.id
       })
-
-      Product.find({ '_id': { $in: array } })
+      // product collection 에서 현재 남아있는 상품들의 정보를 가져오기
+      // productIds = [61803c768c925c38d845ca6a,61803c768c925c38d845ca6a,61803c768c925c38d845ca6a] 이런식으로 바꿔주기
+      Product.find({'_id': {$in: array}})
         .populate('writer')
         .exec((err, cartDetail) => {
           return res.status(200).json({
@@ -159,7 +164,7 @@ router.get('/removeFromCart', auth, (req, res) => {
 
 router.get('/userCartInfo', auth, (req, res) => {
   User.findOne(
-    { _id: req.user._id },
+    {_id: req.user._id},
     (err, userInfo) => {
       let cart = userInfo.cart;
       let array = cart.map(item => {
@@ -167,18 +172,16 @@ router.get('/userCartInfo', auth, (req, res) => {
       })
 
 
-      Product.find({ '_id': { $in: array } })
+      Product.find({'_id': {$in: array}})
         .populate('writer')
         .exec((err, cartDetail) => {
           if (err) return res.status(400).send(err);
-          return res.status(200).json({ success: true, cartDetail, cart })
+          return res.status(200).json({success: true, cartDetail, cart})
         })
 
     }
   )
 })
-
-
 
 
 router.post('/successBuy', auth, (req, res) => {
@@ -210,16 +213,16 @@ router.post('/successBuy', auth, (req, res) => {
 
 
   User.findOneAndUpdate(
-    { _id: req.user._id },
-    { $push: { history: history }, $set: { cart: [] } },
-    { new: true },
+    {_id: req.user._id},
+    {$push: {history: history}, $set: {cart: []}},
+    {new: true},
     (err, user) => {
-      if (err) return res.json({ success: false, err });
+      if (err) return res.json({success: false, err});
 
 
       const payment = new Payment(transactionData)
       payment.save((err, doc) => {
-        if (err) return res.json({ success: false, err });
+        if (err) return res.json({success: false, err});
 
         //3. Increase the amount of number for the sold information
 
@@ -228,7 +231,7 @@ router.post('/successBuy', auth, (req, res) => {
 
         let products = [];
         doc.product.forEach(item => {
-          products.push({ id: item.id, quantity: item.quantity })
+          products.push({id: item.id, quantity: item.quantity})
         })
 
         // first Item    quantity 2
@@ -236,17 +239,17 @@ router.post('/successBuy', auth, (req, res) => {
 
         async.eachSeries(products, (item, callback) => {
           Product.update(
-            { _id: item.id },
+            {_id: item.id},
             {
               $inc: {
                 "sold": item.quantity
               }
             },
-            { new: false },
+            {new: false},
             callback
           )
         }, (err) => {
-          if (err) return res.json({ success: false, err })
+          if (err) return res.json({success: false, err})
           res.status(200).json({
             success: true,
             cart: user.cart,
@@ -262,11 +265,11 @@ router.post('/successBuy', auth, (req, res) => {
 
 router.get('/getHistory', auth, (req, res) => {
   User.findOne(
-    { _id: req.user._id },
+    {_id: req.user._id},
     (err, doc) => {
       let history = doc.history;
       if (err) return res.status(400).send(err)
-      return res.status(200).json({ success: true, history })
+      return res.status(200).json({success: true, history})
     }
   )
 })

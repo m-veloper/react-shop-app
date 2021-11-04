@@ -165,8 +165,7 @@ router.get("/products_by_id", (req, res) => {
       if (err) {
         return res.status(400).send(err)
       } else {
-        // return res.status(200).send(product)
-        return res.status(200).json({product})
+        return res.status(200).send(product)
       }
     })
 });

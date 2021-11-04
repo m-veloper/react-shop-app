@@ -27,7 +27,6 @@ function CartPage(props) {
         dispatch(getCartItems(cartItems, props.user.userData.cart))
           .then((response) => {
             if (response.payload.length > 0) {
-              console.log("성공");
               calculateTotal(response.payload)
             }
           })
@@ -37,7 +36,6 @@ function CartPage(props) {
 
   const calculateTotal = (cartDetail) => {
     let total = 0;
-
     cartDetail.map(item => {
       total += parseInt(item.price, 10) * item.quantity
     });
@@ -85,7 +83,7 @@ function CartPage(props) {
     <div style={{ width: '85%', margin: '3rem auto' }}>
       <h1>My Cart</h1>
       <div>
-        <UserCardBlock products={props.user.cartDetail && props.user.cartDetail.product } removeItem={removeFromCart}/>
+        <UserCardBlock products={props.user.cartDetail && props.user.cartDetail } removeItem={removeFromCart}/>
         {ShowTotal ?
           <div style={{ marginTop: '3rem' }}>
             <h2>Total amount: ${Total} </h2>
