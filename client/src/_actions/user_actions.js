@@ -115,7 +115,11 @@ export function removeCartItem(productId) {
     }
 }
 
-
+/**
+ * 페이팔 결제 성공시 처리 로직
+ * @param data
+ * @returns {{payload: Promise<AxiosResponse<any>>, type: string}}
+ */
 export function onSuccessBuy(data) {
 
     const request = axios.post(`${USER_SERVER}/successBuy`, data)

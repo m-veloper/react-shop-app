@@ -3,6 +3,8 @@ const router = express.Router();
 const {User} = require("../models/User");
 const {Product} = require("../models/Product");
 const {auth} = require("../middleware/auth");
+const {Payment} = require("../models/Payment");
+const async = require("async");
 
 //=================================
 //             User
@@ -183,12 +185,14 @@ router.get('/userCartInfo', auth, (req, res) => {
   )
 })
 
-
+/**
+ * 페이팔 결제정보 저장 처리 로직
+ */
 router.post('/successBuy', auth, (req, res) => {
   let history = [];
   let transactionData = {};
 
-  //1.Put brief Payment Information inside User Collection
+  // User Collection 안에 History 필드 안에 간단한 결제정보 넣기
   req.body.cartDetail.forEach((item) => {
     history.push({
       dateOfPurchase: Date.now(),
@@ -200,7 +204,9 @@ router.post('/successBuy', auth, (req, res) => {
     })
   })
 
-  //2.Put Payment Information that come from Paypal into Payment Collection
+  // Payment Collection 안에 자세한 결제정보 넣어주기
+
+  // user 정보 셋팅
   transactionData.user = {
     id: req.user._id,
     name: req.user.name,
@@ -208,56 +214,65 @@ router.post('/successBuy', auth, (req, res) => {
     email: req.user.email
   }
 
+  // 결제 정보 셋팅
   transactionData.data = req.body.paymentData;
+
+  // 결제상품 정보 셋팅
   transactionData.product = history
 
 
+  //history 정보를 저장
   User.findOneAndUpdate(
     {_id: req.user._id},
-    {$push: {history: history}, $set: {cart: []}},
+    {$push: {history: history}, $set: {cart: []}}, // $set: {cart: []} : 결제가 성공하면 장바구니안에 상품이 남아있으면 안되므로 빈값으로 셋팅
     {new: true},
     (err, user) => {
-      if (err) return res.json({success: false, err});
+      if (err) {
+        return res.json({success: false, err});
+      } else {
+        // payment 에다가 transactionData 정보 저장
+        const payment = new Payment(transactionData)
+        payment.save((err, doc) => {
+          if (err) {
+            return res.json({success: false, err});
+          } else {
 
+            // 판매된 상품의 판매 수량 업데이트 시켜주기
+            // 1. 판매된 상품당 몇개의 수량이 판매되었는지?
 
-      const payment = new Payment(transactionData)
-      payment.save((err, doc) => {
-        if (err) return res.json({success: false, err});
+            let products = [];
+            doc.product.forEach(item => {
+              products.push({id: item.id, quantity: item.quantity})
+            })
 
-        //3. Increase the amount of number for the sold information
+            // first Item    quantity 2
+            // second Item  quantity 3
 
-        //first We need to know how many product were sold in this transaction for
-        // each of products
-
-        let products = [];
-        doc.product.forEach(item => {
-          products.push({id: item.id, quantity: item.quantity})
-        })
-
-        // first Item    quantity 2
-        // second Item  quantity 3
-
-        async.eachSeries(products, (item, callback) => {
-          Product.update(
-            {_id: item.id},
-            {
-              $inc: {
-                "sold": item.quantity
+            async.eachSeries(products, (item, callback) => {
+              Product.update(
+                {_id: item.id},
+                {
+                  $inc: {
+                    "sold": item.quantity
+                  }
+                },
+                {new: false},
+                callback
+              )
+            }, (err) => {
+              if (err) {
+                return res.json({success: false, err})
+              }else {
+                res.status(200).json({
+                success: true,
+                cart: user.cart,
+                cartDetail: []
+              })
               }
-            },
-            {new: false},
-            callback
-          )
-        }, (err) => {
-          if (err) return res.json({success: false, err})
-          res.status(200).json({
-            success: true,
-            cart: user.cart,
-            cartDetail: []
-          })
+            })
+          }
         })
-
-      })
+      }
     }
   )
 })
